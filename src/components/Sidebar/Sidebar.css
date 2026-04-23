@@ -100,6 +100,7 @@
     cursor: pointer;
     font-size: 14px;
     color: #333;
+    text-decoration: none;
     transition: background 0.15s ease;
 }
 
@@ -109,4 +110,28 @@
 
 .sidebar .bottom-item p {
     margin: 0;
+}
+
+.sidebar .bottom-item a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background 0.15s ease;
+}
+
+.sidebar .bottom-item:hover {
+    background-color: #e2e6eb;
+}
+
+.sidebar .bottom-item p {
+    margin: 0;
+}
+
+.sidebar .bottom-item a:hover {
+    background-color: #e2e6eb;
 }

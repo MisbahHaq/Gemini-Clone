@@ -2,6 +2,7 @@ import './Sidebar.css'
 import { assets } from '../../assets/assets'
 import React, { useContext } from 'react'
 import { Context } from '../../context/Context'
+import { Link } from 'react-router-dom'
 
 const Sidebar = () => {
 
@@ -34,19 +35,19 @@ const Sidebar = () => {
                 )}
             </div>
             <div className="bottom">
-                <div className='bottom-item recent-entry'>
-                    <img src={assets.question_icon} />
-                    <p>Help</p>
-                </div>
-                <div className='bottom-item recent-entry'>
-                    <img src={assets.history_icon} />
-                    <p>Activity</p>
-                </div>
-                <div className='bottom-item recent-entry'>
-                    <img src={assets.setting_icon} />
-                    <p>Settings</p>
-                </div>
-            </div>
+                 <Link to="/help" className='bottom-item recent-entry'>
+                     <img src={assets.question_icon} />
+                     <p>Help</p>
+                 </Link>
+                 <div className='bottom-item recent-entry'>
+                     <img src={assets.history_icon} />
+                     <p>Activity</p>
+                 </div>
+                 <Link to="/settings" className='bottom-item recent-entry'>
+                     <img src={assets.setting_icon} />
+                     <p>Settings</p>
+                 </Link>
+             </div>
         </div>
     )
 }
