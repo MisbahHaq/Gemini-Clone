@@ -5,7 +5,10 @@ import { Context } from '../../context/Context'
 
 const Main = () => {
 
-    const { onSent, recentPrompt, showResult, loading, resultData, setInput, input } = useContext(Context)
+    const { onSent, showResult, loading, setInput, input, sessions, currentSessionId } = useContext(Context)
+
+    const currentSession = sessions.find(s => s.id === currentSessionId);
+    const conversation = currentSession?.messages || [];
 
     return (
         <div className="main">
@@ -15,7 +18,7 @@ const Main = () => {
             </div>
             <div className='main-container'>
 
-                {!showResult ? (
+                {!showResult || conversation.length === 0 ? (
                     <>
                         <div className='greet'>
                             <p><span>Hello, Dev.</span></p>
@@ -42,18 +45,31 @@ const Main = () => {
                     </>
                 ) : (
                     <div className='result'>
-                        <div className="result-title">
-                            <img src={assets.user_icon} alt="" />
-                            <p>{recentPrompt}</p>
-                        </div>
-                        <div className="result-data">
-                            <img src={assets.gemini_icon} alt="" />
-                            <p>{recentPrompt}</p>
-                        </div>
-                        <div className='result-data'>
-                            <img src={assets.gemini_icon} alt="" />
-                            <p dangerouslySetInnerHTML={{ __html: resultData }}></p>
-                        </div>
+                        {conversation.map((entry, idx) => (
+                            <div key={idx} className='conversation-entry'>
+                                <div className="result-title">
+                                    <img src={assets.user_icon} alt="" />
+                                    <p>{entry.prompt}</p>
+                                </div>
+                                <div className="result-data">
+                                    <img src={assets.gemini_icon} alt="" />
+                                    <p dangerouslySetInnerHTML={{ __html: entry.response }}></p>
+                                </div>
+                            </div>
+                        ))}
+                        {loading && (
+                            <div className='conversation-entry'>
+                                <div className='result-data'>
+                                    <img src={assets.gemini_icon} alt="" />
+                                    <div className='loading-indicator'>
+                                        <div className='loading-dots'>
+                                            <span></span><span></span><span></span>
+                                        </div>
+                                        <span>Thinking...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -64,12 +80,20 @@ const Main = () => {
                             value={input}
                             type='text'
                             placeholder='Enter a prompt here'
-                            onKeyDown={(e) => e.key === "Enter" ? onSent() : null}
+                            onKeyDown={(e) => e.key === "Enter" && !loading && onSent()}
+                            disabled={loading}
                         />
                         <div>
                             <img src={assets.gallery_icon} alt="" />
                             <img src={assets.mic_icon} alt="" />
-                            {input ? <img onClick={() => onSent()} src={assets.send_icon} alt="" /> : null}
+                            {input && !loading && (
+                                <img 
+                                    onClick={() => onSent()} 
+                                    src={assets.send_icon} 
+                                    alt="" 
+                                    className='send-icon'
+                                />
+                            )}
                         </div>
                     </div>
                     <p className='bottom-info'>

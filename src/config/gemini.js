@@ -3,39 +3,50 @@ function markdownToHtml(text) {
     if (!text) return '';
 
     return text
-        // Escape HTML
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        // Bold: **text** or __text__
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/__(.+?)__/g, '<strong>$1</strong>')
-        // Italic: *text* or _text_
         .replace(/\*(.+?)\*/g, '<em>$1</em>')
         .replace(/_(.+?)_/g, '<em>$1</em>')
-        // Code: `text`
         .replace(/`(.+?)`/g, '<code>$1</code>')
-        // Line breaks
         .replace(/\n/g, '<br>');
 }
 
-// OpenRouter API integration - uses OpenAI-compatible format
+// Remove all OpenRouter injected content
+function cleanOpenRouterText(text) {
+    if (!text) return '';
+
+    // Strip everything from <environment_details> onwards
+    let cleaned = text.replace(/<environment_details>[\s\S]*/g, '');
+
+    // Strip any system prompts that might have leaked
+    cleaned = cleaned.replace(/Current time:[\s\S]*?(\n|$)/g, '');
+    cleaned = cleaned.replace(/You are ChatGPT[\s\S]*?(\n|$)/g, '');
+    cleaned = cleaned.replace(/Knowledge cutoff:[\s\S]*?(\n|$)/g, '');
+
+    return cleaned.trim();
+}
+
 async function runChat(prompt) {
     try {
-        console.log('Sending prompt:', prompt);
+        let cleanPrompt = cleanOpenRouterText(prompt);
+
+        console.log('Sending prompt:', cleanPrompt);
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
-                'Authorization': 'Bearer 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',
+                'Authorization': 'Bearer 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',
                 'HTTP-Referer': window.location.origin,
                 'X-Title': 'Gemini Clone',
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 model: 'google/gemini-2.0-flash-001',
-                messages: [{ role: 'user', content: prompt }],
+                messages: [{ role: 'user', content: cleanPrompt }],
                 temperature: 0.7,
-                max_tokens: 40,
+                max_tokens: 200,
             })
         });
 
@@ -46,23 +57,13 @@ async function runChat(prompt) {
             throw new Error(data.error?.message || `HTTP error ${response.status}`);
         }
 
-        const message = data.choices?.[0]?.message;
-        let content = message?.content;
-        if (!content) {
-            content = message?.reasoning;
-        }
+        let content = data.choices?.[0]?.message?.content || '';
 
-        if (content) {
-            // Strip OpenRouter's <environment_details> block and everything after it
-            const envTagIndex = content.indexOf('<environment_details>');
-            if (envTagIndex !== -1) {
-                content = content.substring(0, envTagIndex).trim();
-            }
-            // Convert markdown to HTML
-            content = markdownToHtml(content);
-        }
+        content = cleanOpenRouterText(content);
+        content = markdownToHtml(content);
 
-        return content || 'No response content';
+        console.log('Final content:', content);
+        return content || 'No response received';
     } catch (error) {
         console.error('OpenRouter API error:', error.message);
         throw error;

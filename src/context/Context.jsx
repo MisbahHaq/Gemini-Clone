@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 import runChat from "../config/gemini";
 
 export const Context = createContext();
@@ -6,45 +6,99 @@ export const Context = createContext();
 const ContextProvider = (props) => {
 
     const [input, setInput] = useState("");
-    const [recentPrompt, setRecentPrompt] = useState("");
-    const [prevPrompts, setPrevPrompts] = useState([]);
-    const [showResult, setShowResult] = useState(false);
+    const [sessions, setSessions] = useState([]);
+    const [currentSessionId, setCurrentSessionId] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [resultData, setResultData] = useState("");
+    const [showResult, setShowResult] = useState(false);
 
-    // useEffect(() => {
-    //     const initialize = async () => {
-    //         try {
-    //             await onSent("what is react js")
-    //         } catch (error) {
-    //             console.error('Initial chat error:', error);
-    //         }
-    //     }
-    //     initialize()
-    // }, [])
+    // Auto-create a session on mount
+    useEffect(() => {
+        if (sessions.length === 0) {
+            const newSession = {
+                id: Date.now(),
+                title: 'New Chat',
+                messages: []
+            };
+            setSessions([newSession]);
+            setCurrentSessionId(newSession.id);
+        }
+    }, []);
+
+    // Get current session
+    const currentSession = sessions.find(s => s.id === currentSessionId);
+
+    const createNewChat = () => {
+        const newSession = {
+            id: Date.now(),
+            title: 'New Chat',
+            messages: []
+        };
+        setSessions(prev => [newSession, ...prev]);
+        setCurrentSessionId(newSession.id);
+        setInput("");
+        setShowResult(false);
+    };
+
+    const selectSession = (sessionId) => {
+        setCurrentSessionId(sessionId);
+    };
 
     const onSent = async (prompt) => {
+        if (!currentSessionId) return;
 
-        setResultData("")
-        setLoading(true)
-        setShowResult(true)
-        setRecentPrompt(input)
-        const response = await runChat(input)
-        setResultData(response)
-        setLoading(false)
-        setInput("")
-    }
+        setLoading(true);
+
+        try {
+            const response = await runChat(input);
+
+            // Clean response
+            let cleanedResponse = response;
+            if (cleanedResponse) {
+                cleanedResponse = cleanedResponse.replace(/<environment_details>[\s\S]*?<\/environment_details>/g, '');
+                cleanedResponse = cleanedResponse.replace(/<environment_details>[\s\S]*/g, '');
+                cleanedResponse = cleanedResponse.trim();
+            }
+
+            // Clean input too
+            let cleanedInput = input;
+            if (cleanedInput) {
+                cleanedInput = cleanedInput.replace(/<environment_details>[\s\S]*?<\/environment_details>/g, '');
+                cleanedInput = cleanedInput.replace(/<environment_details>[\s\S]*/g, '');
+                cleanedInput = cleanedInput.trim();
+            }
+
+            setSessions(prev => prev.map(session => {
+                if (session.id === currentSessionId) {
+                    const isFirstMessage = session.messages.length === 0;
+                    return {
+                        ...session,
+                        title: isFirstMessage ? cleanedInput.slice(0, 30) + (cleanedInput.length > 30 ? '...' : '') : session.title,
+                        messages: [...session.messages, { prompt: cleanedInput, response: cleanedResponse }]
+                    };
+                }
+                return session;
+            }));
+
+            setShowResult(true);
+        } catch (error) {
+            console.error('Chat error:', error);
+        } finally {
+            setLoading(false);
+            setInput("");
+        }
+    };
 
     const contextValue = {
-        prevPrompts,
-        setPrevPrompts,
+        sessions,
+        currentSessionId,
+        createNewChat,
+        selectSession,
         onSent,
-        setRecentPrompt,
-        showResult,
         loading,
-        resultData,
         input,
         setInput,
+        showResult,
+        setShowResult,
     }
 
     return (

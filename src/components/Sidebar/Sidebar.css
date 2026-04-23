@@ -5,6 +5,7 @@
     justify-content: space-between;
     background-color: #f0f4f9;
     padding: 25px 15px;
+    width: 260px;
 }
 
 .sidebar img {
@@ -15,52 +16,97 @@
     display: block;
     margin-left: 10px;
     cursor: pointer;
+    margin-bottom: 20px;
 }
 
 .sidebar .new-chat {
-    margin-top: 50px;
+    margin-top: 10px;
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 15px;
+    padding: 12px 15px;
     background-color: #e6eaf1;
-    border-radius: 50px;
+    border-radius: 12px;
     font-size: 14px;
-    color: grey;
+    color: #333;
     cursor: pointer;
+    transition: background 0.2s ease;
+    margin-bottom: 20px;
+}
+
+.sidebar .new-chat:hover {
+    background-color: #d5dce8;
 }
 
 .sidebar .recent {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .sidebar .recent-title {
-    margin-top: 30px;
-    margin-bottom: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .sidebar .recent-entry {
     display: flex;
-    align-items: start;
+    align-items: center;
     gap: 10px;
     padding: 10px;
-    padding-right: 40px;
-    border-radius: 50px;
+    padding-right: 10px;
+    border-radius: 8px;
     color: #282828;
     cursor: pointer;
+    font-size: 14px;
+    transition: background 0.15s ease;
+    margin-bottom: 2px;
 }
 
 .sidebar .recent-entry:hover {
     background-color: #e2e6eb;
 }
 
+.sidebar .recent-entry.active {
+    background-color: #dfe3eb;
+    font-weight: 500;
+}
+
+.sidebar .recent-entry p {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .sidebar .bottom {
     display: flex;
     flex-direction: column;
+    gap: 4px;
 }
 
 .sidebar .bottom-item {
-    padding-right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 8px;
     cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    transition: background 0.15s ease;
+}
+
+.sidebar .bottom-item:hover {
+    background-color: #e2e6eb;
+}
+
+.sidebar .bottom-item p {
+    margin: 0;
 }

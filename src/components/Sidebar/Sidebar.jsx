@@ -1,41 +1,50 @@
 import './Sidebar.css'
 import { assets } from '../../assets/assets'
-import React, { useState } from 'react'
+import React, { useContext } from 'react'
+import { Context } from '../../context/Context'
 
 const Sidebar = () => {
 
-    const [extended, setExtended] = useState(false)
+    const { sessions, currentSessionId, createNewChat, selectSession } = useContext(Context)
+
     return (
         <div className='sidebar'>
             <div className="top">
-                <img onClick={() => setExtended(prev => !prev)} className='menu' src={assets.menu_icon} alt='' />
-                <div className="new-chat">
+                <div className="new-chat" onClick={createNewChat}>
                     <img src={assets.plus_icon} alt="" />
-                    {extended ? <p>New Chat</p> : null}
+                    <p>New Chat</p>
                 </div>
-                {extended ? <div className='recent'>
-                    <p className='recent-title'>
-                        Recent
-                    </p>
-                    <div className='recent-entry'>
-                        <img src={assets.message_icon} alt='' />
-                        <p>What is react ...</p>
-                    </div>
-                </div> : null}
 
+                {sessions.length > 0 && (
+                    <div className='recent'>
+                        <p className='recent-title'>
+                            Recent
+                        </p>
+                        {sessions.map(session => (
+                            <div 
+                                key={session.id}
+                                className={`recent-entry ${session.id === currentSessionId ? 'active' : ''}`}
+                                onClick={() => selectSession(session.id)}
+                            >
+                                <img src={assets.message_icon} alt='' />
+                                <p>{session.title}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
             <div className="bottom">
                 <div className='bottom-item recent-entry'>
                     <img src={assets.question_icon} />
-                    {extended ? <p>Help</p> : null}
+                    <p>Help</p>
                 </div>
                 <div className='bottom-item recent-entry'>
                     <img src={assets.history_icon} />
-                    {extended ? <p>Activity</p> : null}
+                    <p>Activity</p>
                 </div>
                 <div className='bottom-item recent-entry'>
                     <img src={assets.setting_icon} />
-                    {extended ? <p>Settings</p> : null}
+                    <p>Settings</p>
                 </div>
             </div>
         </div>
